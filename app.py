@@ -1,4 +1,5 @@
 import streamlit as st
+from utils.pdf_processor import extract_text_from_pdf
 
 
 # Page configuration
@@ -37,6 +38,16 @@ with st.sidebar:
 
 
 # Main section placeholder
-st.info(
-    "🚀 Upload and AI analysis features coming soon."
+uploaded_file = st.file_uploader(
+    "Upload Research Paper PDF",
+    type=["pdf"]
 )
+
+if uploaded_file is not None:
+    extracted_text = extract_text_from_pdf(uploaded_file)
+
+    st.subheader("Extracted Paper Content")
+
+    st.write(
+        extracted_text[:2000]
+    )
