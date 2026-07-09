@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.pdf_processor import extract_text_from_pdf
 from utils.text_splitter import split_text_into_chunks
+from utils.vector_store import create_vector_store, search_vector_store
 
 
 # Page configuration
@@ -56,3 +57,28 @@ if uploaded_file is not None:
     )
 
     st.write(chunks[0])
+
+
+    vector_store, embedding_model = create_vector_store(chunks)
+
+    st.success(
+        "Vector database created successfully"
+    )
+
+    question = st.text_input(
+    "Ask a question about your research paper"
+    )
+
+    if question:
+
+        results = search_vector_store(
+            question,
+            vector_store,
+            embedding_model,
+            chunks
+        )
+
+        st.subheader("Relevant Research Context")
+
+        for result in results:
+            st.write(result)
