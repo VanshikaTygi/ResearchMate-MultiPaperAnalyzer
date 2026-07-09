@@ -1,5 +1,6 @@
 import streamlit as st
 from utils.pdf_processor import extract_text_from_pdf
+from utils.text_splitter import split_text_into_chunks
 
 
 # Page configuration
@@ -46,8 +47,12 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     extracted_text = extract_text_from_pdf(uploaded_file)
 
-    st.subheader("Extracted Paper Content")
+    chunks = split_text_into_chunks(extracted_text)
 
-    st.write(
-        extracted_text[:2000]
+    st.subheader("Document Processing Result")
+
+    st.success(
+        f"PDF processed successfully into {len(chunks)} chunks"
     )
+
+    st.write(chunks[0])
