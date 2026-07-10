@@ -3,6 +3,7 @@ from utils.pdf_processor import extract_text_from_pdf
 from utils.text_splitter import split_text_into_chunks
 from utils.vector_store import create_vector_store, search_vector_store
 from agents.qa_agent import research_qa_agent
+from agents.analysis_agent import analyze_research_paper
 
 
 # Page configuration
@@ -65,6 +66,14 @@ if uploaded_file is not None:
     st.success(
         "Vector database created successfully"
     )
+
+    if st.button("Analyze Research Paper"):
+
+        analysis = analyze_research_paper(chunks)
+
+        st.subheader("Research Analysis Agent")
+
+        st.write(analysis)
 
     question = st.text_input(
     "Ask a question about your research paper"
