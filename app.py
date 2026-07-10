@@ -2,6 +2,7 @@ import streamlit as st
 from utils.pdf_processor import extract_text_from_pdf
 from utils.text_splitter import split_text_into_chunks
 from utils.vector_store import create_vector_store, search_vector_store
+from utils.llm import generate_answer
 
 
 # Page configuration
@@ -78,7 +79,16 @@ if uploaded_file is not None:
             chunks
         )
 
-        st.subheader("Relevant Research Context")
 
-        for result in results:
-            st.write(result)
+        context = "\n\n".join(results)
+
+
+        answer = generate_answer(
+            question,
+            context
+        )
+
+
+        st.subheader("ResearchMate AI Answer")
+
+        st.write(answer)
