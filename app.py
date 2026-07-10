@@ -2,7 +2,7 @@ import streamlit as st
 from utils.pdf_processor import extract_text_from_pdf
 from utils.text_splitter import split_text_into_chunks
 from utils.vector_store import create_vector_store, search_vector_store
-from utils.llm import generate_answer
+from agents.qa_agent import research_qa_agent
 
 
 # Page configuration
@@ -72,20 +72,11 @@ if uploaded_file is not None:
 
     if question:
 
-        results = search_vector_store(
+        answer = research_qa_agent(
             question,
             vector_store,
             embedding_model,
             chunks
-        )
-
-
-        context = "\n\n".join(results)
-
-
-        answer = generate_answer(
-            question,
-            context
         )
 
 
