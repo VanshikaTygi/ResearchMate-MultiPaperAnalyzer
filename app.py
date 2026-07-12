@@ -4,6 +4,7 @@ from utils.text_splitter import split_text_into_chunks
 from utils.vector_store import create_vector_store, search_vector_store
 from agents.qa_agent import research_qa_agent
 from agents.analysis_agent import analyze_research_paper
+from agents.comparison_agent import compare_research_papers
 
 
 # Page configuration
@@ -42,38 +43,59 @@ with st.sidebar:
 
 
 # Main section placeholder
-uploaded_file = st.file_uploader(
-    "Upload Research Paper PDF",
-    type=["pdf"]
+uploaded_files = st.file_uploader(
+    "Upload Research Paper PDFs",
+    type=["pdf"],
+    accept_multiple_files=True
 )
 
-if uploaded_file is not None:
-    extracted_text = extract_text_from_pdf(uploaded_file)
+if uploaded_files:
 
-    chunks = split_text_into_chunks(extracted_text)
+    all_papers = []
 
-    st.subheader("Document Processing Result")
+    for uploaded_file in uploaded_files:
 
-    st.success(
-        f"PDF processed successfully into {len(chunks)} chunks"
-    )
+        extracted_text = extract_text_from_pdf(uploaded_file)
 
-    st.write(chunks[0])
+        chunks = split_text_into_chunks(extracted_text)
 
-
-    vector_store, embedding_model = create_vector_store(chunks)
-
-    st.success(
-        "Vector database created successfully"
-    )
-
-    if st.button("Analyze Research Paper"):
+        vector_store, embedding_model = create_vector_store(chunks)
 
         analysis = analyze_research_paper(chunks)
 
-        st.subheader("Research Analysis Agent")
+        paper_data = {
+            "title": uploaded_file.name.replace(".pdf", ""),
+            "filename": uploaded_file.name,
+            "summary": analysis,
+            "chunks": chunks,
+            "vector_store": vector_store,
+            "embedding_model": embedding_model
+        }
 
-        st.write(analysis)
+        all_papers.append(paper_data)
+
+    paper_names = [
+        paper["title"]
+        for paper in all_papers
+    ]
+
+    selected_paper_name = st.selectbox(
+        "Select a paper",
+        paper_names
+    )
+
+    selected_paper = next(
+        paper
+        for paper in all_papers
+        if paper["title"] == selected_paper_name
+    )
+
+
+    st.subheader("Research Analysis Agent")
+
+    if st.button("Analyze Research Paper"):
+        st.write(selected_paper["summary"])
+
 
     question = st.text_input(
     "Ask a question about your research paper"
@@ -83,12 +105,34 @@ if uploaded_file is not None:
 
         answer = research_qa_agent(
             question,
-            vector_store,
-            embedding_model,
-            chunks
+            selected_paper["vector_store"],
+            selected_paper["embedding_model"],
+            selected_paper["chunks"]
         )
 
 
         st.subheader("ResearchMate AI Answer")
 
         st.write(answer)
+
+
+    st.subheader("Comparative Intelligence Agent")
+
+    if len(all_papers) >= 2:
+
+        comparison_question = st.text_input(
+            "Ask a comparison question (leave empty for automatic comparison)"
+        )
+
+        if st.button("Compare Research Papers"):
+
+            comparison = compare_research_papers(
+                all_papers,
+                comparison_question if comparison_question else None
+            )
+
+            st.write(comparison)
+
+    else:
+
+        st.info("Upload at least 2 research papers for comparison.")
