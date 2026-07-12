@@ -5,6 +5,7 @@ from utils.vector_store import create_vector_store, search_vector_store
 from agents.qa_agent import research_qa_agent
 from agents.analysis_agent import analyze_research_paper
 from agents.comparison_agent import compare_research_papers
+from agents.innovation_agent import generate_research_innovation
 
 
 # Page configuration
@@ -136,3 +137,14 @@ if uploaded_files:
     else:
 
         st.info("Upload at least 2 research papers for comparison.")
+
+    
+    st.subheader("Research Innovation Agent")
+
+    if st.button("Generate Research Innovation"):
+
+        innovation_report = generate_research_innovation(all_papers)
+
+        st.subheader("Research Innovation Report")
+
+        st.write(innovation_report)
