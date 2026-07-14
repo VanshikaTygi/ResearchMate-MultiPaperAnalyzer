@@ -1,12 +1,12 @@
 import streamlit as st
-from utils.pdf_processor import extract_text_from_pdf
-from utils.text_splitter import split_text_into_chunks
-from utils.vector_store import create_vector_store, search_vector_store
+from services.paper_manager import prepare_all_papers
+from utils.vector_store import search_vector_store
 from agents.qa_agent import research_qa_agent
 from agents.analysis_agent import analyze_research_paper
 from agents.comparison_agent import compare_research_papers
 from agents.innovation_agent import generate_research_innovation
 from agents.coordinator_agent import route_query
+import time
 
 
 # Page configuration
@@ -15,6 +15,12 @@ st.set_page_config(
     page_icon="📚",
     layout="wide"
 )
+
+if "papers" not in st.session_state:
+    st.session_state.papers = []
+
+if "uploaded_file_names" not in st.session_state:
+    st.session_state.uploaded_file_names = []
 
 
 # =========================
@@ -103,28 +109,18 @@ uploaded_files = st.file_uploader(
 
 if uploaded_files:
 
-    all_papers = []
+    current_file_names = [
+        file.name
+        for file in uploaded_files
+    ]
 
-    for uploaded_file in uploaded_files:
+    if current_file_names != st.session_state.uploaded_file_names:
 
-        extracted_text = extract_text_from_pdf(uploaded_file)
+        st.session_state.papers = prepare_all_papers(uploaded_files)
 
-        chunks = split_text_into_chunks(extracted_text)
+        st.session_state.uploaded_file_names = current_file_names
 
-        vector_store, embedding_model = create_vector_store(chunks)
-
-        analysis = analyze_research_paper(chunks)
-
-        paper_data = {
-            "title": uploaded_file.name.replace(".pdf", ""),
-            "filename": uploaded_file.name,
-            "summary": analysis,
-            "chunks": chunks,
-            "vector_store": vector_store,
-            "embedding_model": embedding_model
-        }
-
-        all_papers.append(paper_data)
+    all_papers = st.session_state.papers
 
     paper_names = [
         paper["title"]
@@ -241,7 +237,22 @@ if uploaded_files:
     st.subheader("📄 Research Analysis Agent")
 
     if st.button("Analyze Research Paper"):
-        st.write(selected_paper["summary"])
+
+        if selected_paper["summary"] is None:
+
+            with st.spinner("Analyzing research paper..."):
+
+                summary = analyze_research_paper(
+                    selected_paper["chunks"]
+                )
+
+                selected_paper["summary"] = summary
+
+        else:
+
+            summary = selected_paper["summary"]
+
+        st.write(summary)
 
 
     question = st.text_input(

@@ -3,16 +3,18 @@ import faiss
 import numpy as np
 
 
+# Load embedding model
+embedding_model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+
 def create_vector_store(chunks):
     """
     Convert text chunks into embeddings and store them in FAISS vector database
     """
 
-    # Load embedding model
-    model = SentenceTransformer(
-        "all-MiniLM-L6-v2"
-    )
-
+    model = embedding_model
 
     # Convert chunks into vectors
     embeddings = model.encode(chunks)
