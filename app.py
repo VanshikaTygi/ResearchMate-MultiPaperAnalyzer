@@ -174,6 +174,12 @@ if uploaded_files:
 
             if key == "analysis":
 
+                if selected_paper["summary"] is None:
+
+                    selected_paper["summary"] = analyze_research_paper(
+                        selected_paper["chunks"]
+                    )
+
                 st.subheader("📄 Research Analysis Agent")
 
                 st.write(selected_paper["summary"])
@@ -182,12 +188,12 @@ if uploaded_files:
             elif key == "qa":
 
                 answer = research_qa_agent(
-
                     user_query,
                     selected_paper["vector_store"],
                     selected_paper["embedding_model"],
-                    selected_paper["chunks"]
-
+                    selected_paper["chunks"],
+                    selected_paper["title"],
+                    selected_paper["filename"]
                 )
 
                 st.subheader("🔍 Research Q&A Agent")
@@ -255,6 +261,8 @@ if uploaded_files:
         st.write(summary)
 
 
+    st.subheader("📄 Research Q&A Agent")
+
     question = st.text_input(
     "Ask a question about your research paper"
     )
@@ -265,7 +273,9 @@ if uploaded_files:
             question,
             selected_paper["vector_store"],
             selected_paper["embedding_model"],
-            selected_paper["chunks"]
+            selected_paper["chunks"],
+            selected_paper["title"],
+            selected_paper["filename"]
         )
 
 

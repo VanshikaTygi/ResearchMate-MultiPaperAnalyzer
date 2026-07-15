@@ -26,18 +26,27 @@ def generate_answer(question, context):
     """
 
 
-    response = client.chat.completions.create(
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
 
-        model="llama-3.1-8b-instant",
+        return response.choices[0].message.content
 
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+    except Exception as e:
+        print(f"LLM Error: {e}")
 
-    )
-
-
-    return response.choices[0].message.content
+        return (
+            "⚠️ ResearchMate AI is temporarily unable to generate an answer.\n\n"
+            "Possible reasons:\n"
+            "- API rate limit reached\n"
+            "- Network issue\n"
+            "- Temporary server problem\n\n"
+            "Please wait a minute and try again."
+        )
