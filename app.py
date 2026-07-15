@@ -20,6 +20,59 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+.main{ background:#F7F9FC; }
+
+section[data-testid="stSidebar"]{
+    background:#ffffff;
+    border-right:1px solid #E5E7EB;
+}
+            
+section[data-testid="stSidebar"] .stButton>button{
+    font-size:15px;
+}
+section[data-testid="stSidebar"] p{
+    font-size:13.5px;
+}
+
+.stButton>button{
+    width:100%;
+    border-radius:10px;
+    border:1px solid #dbe2ef;
+    padding:10px;
+    font-weight:600;
+    transition:0.2s;
+}
+.stButton>button:hover{
+    border:1px solid #2563EB;
+    color:#2563EB;
+    transform:scale(1.02);
+}
+
+[data-testid="stFileUploader"]{
+    border:2px dashed #2563EB;
+    border-radius:12px;
+    padding:20px;
+    background:#FAFBFF;
+}
+
+.stSuccess, .stInfo, .stWarning{ border-radius:10px; }
+textarea{ border-radius:10px !important; }
+div[data-baseweb="select"]{ border-radius:10px; }
+h1,h2,h3{ color:#111827; }
+
+[data-testid="stChatInput"]{
+    border-radius:14px;
+    border:1px solid #dbe2ef;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 if "papers" not in st.session_state:
     st.session_state.papers = []
 
@@ -51,11 +104,41 @@ current_page = st.session_state.current_page
 
 
 # Main section placeholder
-uploaded_files = st.file_uploader(
-    "Upload Research Paper PDFs",
-    type=["pdf"],
-    accept_multiple_files=True
-)
+
+with st.container(border=True):
+    st.markdown("""
+    ## 📂 Upload Research Papers
+
+    Upload one or multiple research papers.
+
+    **Supported Format:** PDF &nbsp;•&nbsp; **Maximum Size:** 200 MB &nbsp;•&nbsp; Multiple uploads supported.
+    """)
+
+    uploaded_files = st.file_uploader(
+        "Upload Research Paper PDFs",
+        type=["pdf"],
+        accept_multiple_files=True
+    )
+
+    MAX_PAPERS = 6
+
+    if uploaded_files and len(uploaded_files) > MAX_PAPERS:
+        st.warning(
+            f"⚠️ You've selected {len(uploaded_files)} papers. To avoid API rate-limit errors, "
+            f"only the first {MAX_PAPERS} will be processed. Consider analyzing papers in smaller batches."
+        )
+        uploaded_files = uploaded_files[:MAX_PAPERS]
+
+
+    if uploaded_files:
+        st.markdown(f"""
+        <div style="display:flex;gap:16px;margin-top:10px;">
+            <div style="background:#EEF2FF;color:#4F46E5;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;">
+                📎 {len(uploaded_files)} file(s) ready
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 if uploaded_files:
 
@@ -65,28 +148,14 @@ if uploaded_files:
     ]
 
     if current_file_names != st.session_state.uploaded_file_names:
+    
+        st.toast(f"{len(uploaded_files)} paper(s) uploaded successfully.")
 
         st.session_state.papers = prepare_all_papers(uploaded_files)
 
         st.session_state.uploaded_file_names = current_file_names
 
     all_papers = st.session_state.papers
-
-    # paper_names = [
-    #     paper["title"]
-    #     for paper in all_papers
-    # ]
-
-    # selected_paper_name = st.selectbox(
-    #     "Select a paper",
-    #     paper_names
-    # )
-
-    # selected_paper = next(
-    #     paper
-    #     for paper in all_papers
-    #     if paper["title"] == selected_paper_name
-    # )
 
 
     # ==========================
@@ -269,7 +338,8 @@ if uploaded_files:
         if len(all_papers) >= 2:
 
             comparison_question = st.text_input(
-                "Comparison question"
+                "Comparison question (optional)",
+                placeholder="Leave empty for an automatic full comparison"
             )
 
             if st.button("Compare"):
@@ -299,176 +369,3 @@ if uploaded_files:
 
             with container:
                 st.markdown(innovation)
-
-    # user_query, analyze_button = show_coordinator_page()
-
-    # if analyze_button and user_query:
-
-    #     routing = route_query(user_query)
-
-    #     st.success("Coordinator Decision")
-
-    #     st.write("Selected Agent(s):")
-    #     st.write(", ".join(routing["agents"]))
-
-    #     st.write("Detected Intent:")
-    #     st.write(", ".join(routing["keys"]))
-
-    #     st.markdown("---")
-
-    #     # Execute selected agents
-
-    #     for key in routing["keys"]:
-
-    #         if key == "analysis":
-
-    #             if selected_paper["summary"] is None:
-
-    #                 selected_paper["summary"] = analyze_research_paper(
-    #                     selected_paper["chunks"]
-    #                 )
-
-    #             container = show_expert_page("📄 Research Analysis Agent")
-
-    #             with container:
-    #                 st.markdown(selected_paper["summary"])
-
-
-    #         elif key == "qa":
-
-    #             answer = research_qa_agent(
-    #                 user_query,
-    #                 selected_paper["vector_store"],
-    #                 selected_paper["embedding_model"],
-    #                 selected_paper["chunks"],
-    #                 selected_paper["title"],
-    #                 selected_paper["filename"]
-    #             )
-
-    #             container = show_expert_page("🔎 Research Q&A Agent")
-
-    #             with container:
-    #                 st.markdown(answer)
-
-
-    #         elif key == "comparison":
-
-    #             if len(all_papers) >= 2:
-
-    #                 comparison = compare_research_papers(
-
-    #                     all_papers,
-    #                     user_query
-
-    #                 )
-
-    #                 container = show_expert_page("📊 Comparative Intelligence Agent")
-
-    #                 with container:
-    #                     st.markdown(comparison)
-
-    #             else:
-
-    #                 st.warning("Upload at least two papers for comparison.")
-
-
-    #         elif key == "innovation":
-
-    #             innovation = generate_research_innovation(all_papers)
-
-    #             container = show_expert_page("💡 Research Innovation Agent")
-
-    #             with container:
-    #                 st.markdown(innovation)
-
-
-    # # ==========================
-    # # Expert Mode
-    # # ==========================
-
-    # st.markdown("---")
-    # st.header("🛠 Expert Mode")
-    # st.caption(
-    #     "Use a specific AI agent when you already know which type of analysis you need."
-    # )
-
-    
-    # container = show_expert_page("📄 Research Analysis Agent")
-
-    # if st.button("Analyze Research Paper"):
-
-    #     if selected_paper["summary"] is None:
-
-    #         with st.spinner("Analyzing research paper..."):
-
-    #             summary = analyze_research_paper(
-    #                 selected_paper["chunks"]
-    #             )
-
-    #             selected_paper["summary"] = summary
-
-    #     else:
-
-    #         summary = selected_paper["summary"]
-
-    #     with container:
-    #         st.markdown(selected_paper["summary"])
-
-
-    # container = show_expert_page("🔎 Research Q&A Agent")
-
-    # question = st.text_input(
-    # "Ask a question about your research paper"
-    # )
-
-    # if question:
-
-    #     answer = research_qa_agent(
-    #         question,
-    #         selected_paper["vector_store"],
-    #         selected_paper["embedding_model"],
-    #         selected_paper["chunks"],
-    #         selected_paper["title"],
-    #         selected_paper["filename"]
-    #     )
-
-
-    #     st.subheader("ResearchMate AI Answer")
-
-    #     with container:
-    #         st.markdown(answer)
-
-
-    # container = show_expert_page("📊 Comparative Intelligence Agent")
-
-    # if len(all_papers) >= 2:
-
-    #     comparison_question = st.text_input(
-    #         "Ask a comparison question (leave empty for automatic comparison)"
-    #     )
-
-    #     if st.button("Compare Research Papers"):
-
-    #         comparison = compare_research_papers(
-    #             all_papers,
-    #             comparison_question if comparison_question else None
-    #         )
-
-    #         with container:
-    #             st.markdown(comparison)
-
-    # else:
-
-    #     st.info("Upload at least 2 research papers for comparison.")
-
-    
-    # container = show_expert_page("💡 Research Innovation Agent")
-
-    # if st.button("Generate Research Innovation"):
-
-    #     innovation = generate_research_innovation(all_papers)
-
-    #     st.subheader("Research Innovation Report")
-
-    #     with container:
-    #         st.markdown(innovation)

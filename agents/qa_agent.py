@@ -31,7 +31,7 @@ def research_qa_agent(
     
 
     # Step 1: Retrieve relevant research content
-    relevant_chunks = search_vector_store(
+    relevant_chunks, relevant_indices = search_vector_store(
         question,
         vector_store,
         embedding_model,
@@ -41,7 +41,11 @@ def research_qa_agent(
 
 
     # Step 2: Combine retrieved chunks
-    context = "\n\n".join(relevant_chunks)
+    context = "\n\n".join(
+        f"[Chunk {i+1}]\n{chunk}"
+        for i, chunk in zip(relevant_indices, relevant_chunks)
+    )
+
 
     context = f"""
     Selected Paper Title:
@@ -60,6 +64,9 @@ def research_qa_agent(
         question,
         context
     )
+
+    sources = ", ".join(f"Chunk {i+1}" for i in relevant_indices)
+    answer += f"\n\n---\n**📌 Sources:** {sources} of *{paper_title}*"
 
 
     return answer

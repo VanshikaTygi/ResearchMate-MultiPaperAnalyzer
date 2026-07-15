@@ -55,9 +55,11 @@ def search_vector_store(query, index, model, chunks, top_k=3):
 
     # Get matching chunks
     matched_chunks = []
+    matched_indices = []
 
     for idx in results[0]:
         matched_chunks.append(chunks[idx])
+        matched_indices.append(int(idx))
 
 
-    return matched_chunks
+    return matched_chunks, matched_indices

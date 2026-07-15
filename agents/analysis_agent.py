@@ -33,4 +33,8 @@ def analyze_research_paper(chunks):
         context
     )
 
+    analysis += (
+        "\n\n---\n**📌 Source:** Beginning, middle, and concluding sections of the paper."
+    )
+
     return analysis
