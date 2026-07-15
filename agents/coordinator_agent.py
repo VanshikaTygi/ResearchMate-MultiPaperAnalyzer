@@ -6,8 +6,6 @@ def route_query(user_query):
 
     query = user_query.lower()
 
-    print("=" * 60)
-    print("Incoming Query :", query)
 
     # ==========================
     # Combined Requests (Highest Priority)
@@ -50,8 +48,6 @@ def route_query(user_query):
         "overview"
     ]):
         
-        print(">>> ANALYSIS ROUTE")
-
         return {
             "agents": ["Research Analysis Agent"],
             "keys": ["analysis"]
@@ -73,8 +69,6 @@ def route_query(user_query):
         "brief"
     ]):
         
-        print(">>> QA ROUTE")
-
         return {
             "agents": ["Research Q&A Agent"],
             "keys": ["qa"]

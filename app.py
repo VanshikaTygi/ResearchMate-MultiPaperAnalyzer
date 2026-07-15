@@ -7,6 +7,10 @@ from agents.comparison_agent import compare_research_papers
 from agents.innovation_agent import generate_research_innovation
 from agents.coordinator_agent import route_query
 import time
+from ui.main_ui import show_home_header
+from ui.sidebar_ui import show_sidebar
+from ui.coordinator_ui import show_coordinator_page
+from ui.expert_ui import show_expert_page
 
 
 # Page configuration
@@ -22,83 +26,29 @@ if "papers" not in st.session_state:
 if "uploaded_file_names" not in st.session_state:
     st.session_state.uploaded_file_names = []
 
+# =====================================
+# Current Active Page
+# =====================================
 
-# =========================
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "Coordinator"
+
+
 # Hero Section
-# =========================
-
-st.title("📚 ResearchMate AI")
-
-st.markdown(
-    """
-### Multi-Agent Research Intelligence Platform
-
-Analyze, compare and understand multiple research papers using
-specialized AI agents powered by Retrieval-Augmented Generation (RAG),
-semantic search and Large Language Models.
-
-Upload one or multiple research papers to:
-
-- 📄 Generate structured paper analysis
-- 🔎 Ask intelligent research questions
-- 📊 Compare multiple papers
-- 💡 Discover research gaps and innovation opportunities
-
----
-"""
-)
+show_home_header()
 
 
 # Sidebar
 with st.sidebar:
-
-    st.title("🤖 ResearchMate")
-
-    st.markdown("---")
-
-    st.markdown("## Available AI Agents")
-
-    st.success("📄 Research Analysis Agent")
-
-    st.info("🔎 Research Q&A Agent")
-
-    st.warning("📊 Comparative Intelligence Agent")
-
-    st.error("💡 Research Innovation Agent")
-
-    st.markdown("---")
-
-    st.markdown("### Project Features")
-
-    st.markdown("""
-    - 📑 Multi-PDF Upload
-    - 🧠 LLM Powered
-    - 🔍 Semantic Search
-    - 📚 FAISS Vector Database
-    - 🤖 Multi-Agent Architecture
-    - 💡 Research Gap Discovery
-    """)
-
-    st.markdown("---")
-
-    st.caption("ResearchMate AI v1.0")
+    show_sidebar()
 
 
-st.info(
-"""
-📄 **Upload one or more research papers**
+# =====================================
+# Page Routing
+# =====================================
 
-Supported format:
-- PDF (.pdf)
+current_page = st.session_state.current_page
 
-Capabilities:
-- Multiple PDF upload
-- Automatic text extraction
-- Semantic indexing
-- AI-powered analysis
-- Cross-paper comparison
-"""
-)
 
 # Main section placeholder
 uploaded_files = st.file_uploader(
@@ -122,196 +72,403 @@ if uploaded_files:
 
     all_papers = st.session_state.papers
 
-    paper_names = [
-        paper["title"]
-        for paper in all_papers
-    ]
+    # paper_names = [
+    #     paper["title"]
+    #     for paper in all_papers
+    # ]
 
-    selected_paper_name = st.selectbox(
-        "Select a paper",
-        paper_names
-    )
+    # selected_paper_name = st.selectbox(
+    #     "Select a paper",
+    #     paper_names
+    # )
 
-    selected_paper = next(
-        paper
-        for paper in all_papers
-        if paper["title"] == selected_paper_name
-    )
+    # selected_paper = next(
+    #     paper
+    #     for paper in all_papers
+    #     if paper["title"] == selected_paper_name
+    # )
 
 
     # ==========================
     # Coordinator
     # ==========================
 
-    st.markdown("---")
+    # =====================================
+    # PAGE ROUTER
+    # =====================================
 
-    st.header("🤖 AI Research Coordinator")
+    if current_page == "Coordinator":
 
-    user_query = st.text_area(
-        "Ask anything about your uploaded research papers",
-        placeholder="Example: Compare both papers and suggest future improvements..."
-    )
+        paper_names = [
+            paper["title"]
+            for paper in all_papers
+        ]
 
-    analyze_button = st.button("🚀 Analyze")
+        selected_paper_name = st.selectbox(
+            "Select a paper",
+            paper_names
+        )
 
-    if analyze_button and user_query:
+        selected_paper = next(
+            paper
+            for paper in all_papers
+            if paper["title"] == selected_paper_name
+        )
 
-        routing = route_query(user_query)
 
-        st.success("Coordinator Decision")
+        user_query, analyze_button = show_coordinator_page()
 
-        st.write("Selected Agent(s):")
-        st.write(", ".join(routing["agents"]))
+        if analyze_button and user_query:
 
-        st.write("Detected Intent:")
-        st.write(", ".join(routing["keys"]))
+            routing = route_query(user_query)
 
-        st.markdown("---")
+            st.success("Coordinator Decision")
 
-        # Execute selected agents
+            st.write("Selected Agent(s):")
+            st.write(", ".join(routing["agents"]))
 
-        for key in routing["keys"]:
+            st.write("Detected Intent:")
+            st.write(", ".join(routing["keys"]))
 
-            if key == "analysis":
+            for key in routing["keys"]:
 
-                if selected_paper["summary"] is None:
+                if key == "analysis":
 
-                    selected_paper["summary"] = analyze_research_paper(
-                        selected_paper["chunks"]
+                    if selected_paper["summary"] is None:
+                        selected_paper["summary"] = analyze_research_paper(
+                            selected_paper["chunks"]
+                        )
+
+                    container = show_expert_page("📄 Research Analysis Agent")
+
+                    with container:
+                        st.markdown(selected_paper["summary"])
+
+
+                elif key == "qa":
+
+                    answer = research_qa_agent(
+                        user_query,
+                        selected_paper["vector_store"],
+                        selected_paper["embedding_model"],
+                        selected_paper["chunks"],
+                        selected_paper["title"],
+                        selected_paper["filename"]
                     )
 
-                st.subheader("📄 Research Analysis Agent")
+                    container = show_expert_page("🔎 Research Q&A Agent")
 
-                st.write(selected_paper["summary"])
-
-
-            elif key == "qa":
-
-                answer = research_qa_agent(
-                    user_query,
-                    selected_paper["vector_store"],
-                    selected_paper["embedding_model"],
-                    selected_paper["chunks"],
-                    selected_paper["title"],
-                    selected_paper["filename"]
-                )
-
-                st.subheader("🔍 Research Q&A Agent")
-
-                st.write(answer)
+                    with container:
+                        st.markdown(answer)
 
 
-            elif key == "comparison":
+                elif key == "comparison":
 
-                if len(all_papers) >= 2:
+                    if len(all_papers) >= 2:
 
-                    comparison = compare_research_papers(
+                        comparison = compare_research_papers(
+                            all_papers,
+                            user_query
+                        )
 
-                        all_papers,
-                        user_query
+                        container = show_expert_page("📊 Comparative Intelligence Agent")
 
-                    )
+                        with container:
+                            st.markdown(comparison)
 
-                    st.subheader("📊 Comparative Intelligence Agent")
+                    else:
 
-                    st.write(comparison)
-
-                else:
-
-                    st.warning("Upload at least two papers for comparison.")
-
-
-            elif key == "innovation":
-
-                innovation = generate_research_innovation(all_papers)
-
-                st.subheader("💡 Innovation Suggestions Agent")
-
-                st.write(innovation)
+                        st.warning("Upload at least two papers.")
 
 
-    # ==========================
-    # Expert Mode
-    # ==========================
+                elif key == "innovation":
 
-    st.markdown("---")
-    st.header("🛠 Expert Mode")
-    st.caption(
-        "Use a specific AI agent when you already know which type of analysis you need."
-    )
+                    innovation = generate_research_innovation(all_papers)
 
-    st.subheader("📄 Research Analysis Agent")
+                    container = show_expert_page("💡 Research Innovation Agent")
 
-    if st.button("Analyze Research Paper"):
+                    with container:
+                        st.markdown(innovation)
 
-        if selected_paper["summary"] is None:
 
-            with st.spinner("Analyzing research paper..."):
+    elif current_page == "Analysis":
 
-                summary = analyze_research_paper(
+        paper_names = [
+            paper["title"]
+            for paper in all_papers
+        ]
+
+        selected_paper_name = st.selectbox(
+            "Select a paper",
+            paper_names
+        )
+
+        selected_paper = next(
+            paper
+            for paper in all_papers
+            if paper["title"] == selected_paper_name
+        )
+
+        container = show_expert_page("📄 Research Analysis Agent")
+
+        if st.button("Analyze Research Paper"):
+
+            if selected_paper["summary"] is None:
+
+                selected_paper["summary"] = analyze_research_paper(
                     selected_paper["chunks"]
                 )
 
-                selected_paper["summary"] = summary
+            with container:
+                st.markdown(selected_paper["summary"])
+
+
+    elif current_page == "QA":
+
+        paper_names = [
+            paper["title"]
+            for paper in all_papers
+        ]
+
+        selected_paper_name = st.selectbox(
+            "Select a paper",
+            paper_names
+        )
+
+        selected_paper = next(
+            paper
+            for paper in all_papers
+            if paper["title"] == selected_paper_name
+        )
+
+        container = show_expert_page("🔎 Research Q&A Agent")
+
+        question = st.text_input(
+            "Ask a question"
+        )
+
+        if question:
+
+            answer = research_qa_agent(
+                question,
+                selected_paper["vector_store"],
+                selected_paper["embedding_model"],
+                selected_paper["chunks"],
+                selected_paper["title"],
+                selected_paper["filename"]
+            )
+
+            with container:
+                st.markdown(answer)
+
+
+    elif current_page == "Comparison":
+
+        container = show_expert_page("📊 Comparative Intelligence Agent")
+
+        if len(all_papers) >= 2:
+
+            comparison_question = st.text_input(
+                "Comparison question"
+            )
+
+            if st.button("Compare"):
+
+                comparison = compare_research_papers(
+                    all_papers,
+                    comparison_question if comparison_question else None
+                )
+
+                with container:
+                    st.markdown(comparison)
 
         else:
 
-            summary = selected_paper["summary"]
-
-        st.write(summary)
+            st.info("Upload at least 2 papers.")
 
 
-    st.subheader("📄 Research Q&A Agent")
+    elif current_page == "Innovation":
 
-    question = st.text_input(
-    "Ask a question about your research paper"
-    )
+        container = show_expert_page("💡 Research Innovation Agent")
 
-    if question:
+        if st.button("Generate Innovation"):
 
-        answer = research_qa_agent(
-            question,
-            selected_paper["vector_store"],
-            selected_paper["embedding_model"],
-            selected_paper["chunks"],
-            selected_paper["title"],
-            selected_paper["filename"]
-        )
-
-
-        st.subheader("ResearchMate AI Answer")
-
-        st.write(answer)
-
-
-    st.subheader("Comparative Intelligence Agent")
-
-    if len(all_papers) >= 2:
-
-        comparison_question = st.text_input(
-            "Ask a comparison question (leave empty for automatic comparison)"
-        )
-
-        if st.button("Compare Research Papers"):
-
-            comparison = compare_research_papers(
-                all_papers,
-                comparison_question if comparison_question else None
+            innovation = generate_research_innovation(
+                all_papers
             )
 
-            st.write(comparison)
+            with container:
+                st.markdown(innovation)
 
-    else:
+    # user_query, analyze_button = show_coordinator_page()
 
-        st.info("Upload at least 2 research papers for comparison.")
+    # if analyze_button and user_query:
+
+    #     routing = route_query(user_query)
+
+    #     st.success("Coordinator Decision")
+
+    #     st.write("Selected Agent(s):")
+    #     st.write(", ".join(routing["agents"]))
+
+    #     st.write("Detected Intent:")
+    #     st.write(", ".join(routing["keys"]))
+
+    #     st.markdown("---")
+
+    #     # Execute selected agents
+
+    #     for key in routing["keys"]:
+
+    #         if key == "analysis":
+
+    #             if selected_paper["summary"] is None:
+
+    #                 selected_paper["summary"] = analyze_research_paper(
+    #                     selected_paper["chunks"]
+    #                 )
+
+    #             container = show_expert_page("📄 Research Analysis Agent")
+
+    #             with container:
+    #                 st.markdown(selected_paper["summary"])
+
+
+    #         elif key == "qa":
+
+    #             answer = research_qa_agent(
+    #                 user_query,
+    #                 selected_paper["vector_store"],
+    #                 selected_paper["embedding_model"],
+    #                 selected_paper["chunks"],
+    #                 selected_paper["title"],
+    #                 selected_paper["filename"]
+    #             )
+
+    #             container = show_expert_page("🔎 Research Q&A Agent")
+
+    #             with container:
+    #                 st.markdown(answer)
+
+
+    #         elif key == "comparison":
+
+    #             if len(all_papers) >= 2:
+
+    #                 comparison = compare_research_papers(
+
+    #                     all_papers,
+    #                     user_query
+
+    #                 )
+
+    #                 container = show_expert_page("📊 Comparative Intelligence Agent")
+
+    #                 with container:
+    #                     st.markdown(comparison)
+
+    #             else:
+
+    #                 st.warning("Upload at least two papers for comparison.")
+
+
+    #         elif key == "innovation":
+
+    #             innovation = generate_research_innovation(all_papers)
+
+    #             container = show_expert_page("💡 Research Innovation Agent")
+
+    #             with container:
+    #                 st.markdown(innovation)
+
+
+    # # ==========================
+    # # Expert Mode
+    # # ==========================
+
+    # st.markdown("---")
+    # st.header("🛠 Expert Mode")
+    # st.caption(
+    #     "Use a specific AI agent when you already know which type of analysis you need."
+    # )
 
     
-    st.subheader("Research Innovation Agent")
+    # container = show_expert_page("📄 Research Analysis Agent")
 
-    if st.button("Generate Research Innovation"):
+    # if st.button("Analyze Research Paper"):
 
-        innovation_report = generate_research_innovation(all_papers)
+    #     if selected_paper["summary"] is None:
 
-        st.subheader("Research Innovation Report")
+    #         with st.spinner("Analyzing research paper..."):
 
-        st.write(innovation_report)
+    #             summary = analyze_research_paper(
+    #                 selected_paper["chunks"]
+    #             )
+
+    #             selected_paper["summary"] = summary
+
+    #     else:
+
+    #         summary = selected_paper["summary"]
+
+    #     with container:
+    #         st.markdown(selected_paper["summary"])
+
+
+    # container = show_expert_page("🔎 Research Q&A Agent")
+
+    # question = st.text_input(
+    # "Ask a question about your research paper"
+    # )
+
+    # if question:
+
+    #     answer = research_qa_agent(
+    #         question,
+    #         selected_paper["vector_store"],
+    #         selected_paper["embedding_model"],
+    #         selected_paper["chunks"],
+    #         selected_paper["title"],
+    #         selected_paper["filename"]
+    #     )
+
+
+    #     st.subheader("ResearchMate AI Answer")
+
+    #     with container:
+    #         st.markdown(answer)
+
+
+    # container = show_expert_page("📊 Comparative Intelligence Agent")
+
+    # if len(all_papers) >= 2:
+
+    #     comparison_question = st.text_input(
+    #         "Ask a comparison question (leave empty for automatic comparison)"
+    #     )
+
+    #     if st.button("Compare Research Papers"):
+
+    #         comparison = compare_research_papers(
+    #             all_papers,
+    #             comparison_question if comparison_question else None
+    #         )
+
+    #         with container:
+    #             st.markdown(comparison)
+
+    # else:
+
+    #     st.info("Upload at least 2 research papers for comparison.")
+
+    
+    # container = show_expert_page("💡 Research Innovation Agent")
+
+    # if st.button("Generate Research Innovation"):
+
+    #     innovation = generate_research_innovation(all_papers)
+
+    #     st.subheader("Research Innovation Report")
+
+    #     with container:
+    #         st.markdown(innovation)

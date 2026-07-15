@@ -28,8 +28,6 @@ def research_qa_agent(
 
     if any(keyword in question_lower for keyword in broad_questions):
         top_k = min(10, len(chunks))
-
-    print(f"Top K Selected: {top_k}")
     
 
     # Step 1: Retrieve relevant research content
@@ -40,15 +38,6 @@ def research_qa_agent(
         chunks,
         top_k=top_k
     )
-
-    print("=" * 80)
-    print(f"Question: {question}")
-    print(f"Total Retrieved Chunks: {len(relevant_chunks)}")
-
-    for i, chunk in enumerate(relevant_chunks):
-        print("=" * 60)
-        print(f"Chunk {i+1}")
-        print(chunk[:800])
 
 
     # Step 2: Combine retrieved chunks
