@@ -1,0 +1,146 @@
+ResearchMate AI
+
+Prompt Engineering Log
+
+The following prompts summarize the major interactions
+used during planning, implementation, debugging,
+UI refinement, and final review of the project.
+
+
+=========================================================
+Prompt 1 : Project Planning
+=========================================================
+
+I want to build a project called ResearchMate AI for my AI and Agentic AI course. The idea is to create a research assistant where users can upload one or multiple research papers and interact with them using AI.
+
+The application should not only summarize papers but also compare multiple papers, answer research-related questions, and identify possible research gaps or future work. I want the project to look practical and useful instead of just being another chatbot.
+
+Please suggest a proper project architecture, technologies, folder structure, and explain why each component is needed before we start coding.
+
+
+Why I gave this prompt:
+To finalize the project idea and create a proper development roadmap.
+
+
+=========================================================
+Prompt 2 : Project Architecture
+=========================================================
+
+Now that the project idea is finalized, help me divide the application into independent modules. I don't want everything inside one file.
+
+Create separate UI files, utility files, AI processing modules, and agent files. Also explain how Streamlit should communicate with these modules while keeping the project clean and easy to understand.
+
+Keep the architecture scalable because I may add more AI agents later.
+
+
+Why I gave this prompt:
+To avoid writing the complete application inside app.py.
+
+
+=========================================================
+Prompt 3 : Research Paper Processing
+=========================================================
+
+Help me implement the research paper processing pipeline.
+
+The application should accept multiple PDF research papers, extract text, split it into chunks, generate embeddings, store them inside a FAISS vector database, and prepare everything for semantic search.
+
+Please explain every step before writing the code because I want to understand how the complete pipeline works.
+
+
+Why I gave this prompt:
+To build the backend pipeline for document understanding.
+
+
+=========================================================
+Prompt 4 : Multi-Agent Design
+=========================================================
+
+Instead of creating a single chatbot, I want this project to work like a team of AI agents.
+
+Design separate agents for:
+
+• Research Coordinator
+• Research Analysis
+• Research Q&A
+• Paper Comparison
+• Innovation / Research Gap Discovery
+
+Explain how these agents should communicate with each other and how the coordinator should decide which agent to use based on the user's request.
+
+
+Why I gave this prompt:
+To convert the project into a multi-agent AI system.
+
+
+=========================================================
+Prompt 5 : Feature Implementation
+=========================================================
+
+Help me implement each AI feature one by one.
+
+The application should be able to:
+
+• Generate structured summaries
+• Answer research questions using uploaded papers
+• Compare multiple research papers
+• Find similarities and differences
+• Suggest future research directions and research gaps
+
+Please write modular code so every feature can be maintained independently.
+
+
+Why I gave this prompt:
+To implement the core AI functionality of the project.
+
+
+=========================================================
+Prompt 6 : Streamlit Interface
+=========================================================
+
+Now help me design the Streamlit interface.
+
+I want the application to feel like a real AI product instead of a college assignment.
+
+Use a clean sidebar, organized sections, modern buttons, proper spacing, responsive layout, and a simple color theme. The interface should remain easy to use while keeping the backend completely modular.
+
+Avoid unnecessary clutter and focus on user experience.
+
+
+Why I gave this prompt:
+To improve the usability and appearance of the application.
+
+
+=========================================================
+Prompt 7 : Debugging and Improvements
+=========================================================
+
+I'm facing some issues while integrating different modules.
+
+Help me debug the application without changing the overall project structure.
+
+Whenever you suggest changes, explain why the issue happened and what effect the solution will have. Also try to improve the code quality, readability, and maintainability wherever possible.
+
+
+Why I gave this prompt:
+To fix bugs while understanding the reasoning behind the changes.
+
+
+=========================================================
+Prompt 8 : Final Review
+=========================================================
+
+Before I submit this project, review the complete application as if you are evaluating it.
+
+Check the project structure, UI consistency, modularity, AI workflow, documentation, README, GitHub repository, deployment readiness, and overall presentation.
+
+Suggest improvements that can increase the quality of the final submission without changing the core functionality.
+
+
+Why I gave this prompt:
+To polish the project before the final submission.
+
+
+===========================
+End of Prompt History
+===========================
