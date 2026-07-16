@@ -1,3 +1,10 @@
+# ==========================================================
+# SIDEBAR
+# Renders the left navigation sidebar: logo, page-switch
+# buttons (writes to st.session_state.current_page), and
+# the 4 agent-capability preview cards at the bottom.
+# ==========================================================
+
 import streamlit as st
 
 def show_sidebar():

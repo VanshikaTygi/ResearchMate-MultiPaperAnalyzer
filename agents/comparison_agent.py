@@ -1,3 +1,11 @@
+# ==========================================================
+# COMPARATIVE INTELLIGENCE AGENT
+# Compares 2+ papers using their ALREADY-GENERATED summaries
+# (from analysis_agent.py), not raw chunks. This means a
+# paper must be analyzed at least once before it can be
+# meaningfully compared.
+# ==========================================================
+
 from utils.llm import generate_answer
 
 
@@ -27,6 +35,12 @@ def compare_research_papers(papers, user_query=None):
             f"{paper['summary']}\n"
         )
 
+    # Two modes:
+    #  - user_query is None  -> automatic full comparison across
+    #    a fixed set of 9 dimensions (objective, method, ... etc.)
+    #  - user_query is a string -> answer that SPECIFIC comparison
+    #    question instead of doing the generic 9-point comparison.
+    
     if user_query is None:
 
         question = """

@@ -211,7 +211,7 @@ ResearchMate-MultiPaperAnalyzer/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/<VanshikaTygi>/ResearchMate-MultiPaperAnalyzer.git
+git clone https://github.com/VanshikaTygi/ResearchMate-MultiPaperAnalyzer.git
 ```
 
 ---

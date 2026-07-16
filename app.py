@@ -13,12 +13,36 @@ from ui.coordinator_ui import show_coordinator_page
 from ui.expert_ui import show_expert_page
 
 
+def select_paper(all_papers):
+    """
+    Renders the paper-selection dropdown and returns the
+    matching paper dict. Shared by every page that needs a
+    single selected paper (Coordinator, Analysis, QA).
+    """
+    paper_names = [paper["title"] for paper in all_papers]
+    selected_paper_name = st.selectbox("Select a paper", paper_names)
+    return next(paper for paper in all_papers if paper["title"] == selected_paper_name)
+
+
+# ==========================================================
+# APP ENTRY POINT
+# Renders the header + sidebar, handles file uploads, and
+# routes to one of 5 "pages" based on st.session_state.current_page:
+#   Coordinator (chat-driven, auto-routes to any agent)
+#   Analysis / QA / Comparison / Innovation (direct access
+#   to one specific agent, bypassing the coordinator)
+# ==========================================================
+
 # Page configuration
 st.set_page_config(
     page_title="ResearchMate AI",
     page_icon="📚",
     layout="wide"
 )
+
+# Custom CSS injected once at startup — controls the sidebar,
+# buttons, file uploader, and chat input styling. Not tied to
+# any Streamlit theme setting, so it survives light/dark mode.
 
 st.markdown("""
 <style>
@@ -147,6 +171,12 @@ if uploaded_files:
         for file in uploaded_files
     ]
 
+    # Only re-run the (expensive) extract -> chunk -> embed
+    # pipeline if the SET of uploaded filenames actually
+    # changed since last run. Without this check, Streamlit's
+    # rerun-on-every-interaction behavior would re-process
+    # every paper on every single button click.
+
     if current_file_names != st.session_state.uploaded_file_names:
     
         st.toast(f"{len(uploaded_files)} paper(s) uploaded successfully.")
@@ -159,32 +189,20 @@ if uploaded_files:
     all_papers = st.session_state.papers
 
 
-    # ==========================
-    # Coordinator
-    # ==========================
-
     # =====================================
     # PAGE ROUTER
     # =====================================
 
+     # ================================
+    # PAGE: Coordinator (chat-driven)
+    # User types a free-text question; route_query() decides
+    # which agent(s) respond. Can trigger MULTIPLE agents
+    # from a single query (see coordinator_agent.py).
+    # ================================
+
     if current_page == "Coordinator":
 
-        paper_names = [
-            paper["title"]
-            for paper in all_papers
-        ]
-
-        selected_paper_name = st.selectbox(
-            "Select a paper",
-            paper_names
-        )
-
-        selected_paper = next(
-            paper
-            for paper in all_papers
-            if paper["title"] == selected_paper_name
-        )
-
+        selected_paper = select_paper(all_papers)
 
         user_query, analyze_button = show_coordinator_page()
 
@@ -263,23 +281,13 @@ if uploaded_files:
                         st.markdown(innovation)
 
 
+    # ================================
+    # PAGE: Analysis (direct access, bypasses Coordinator)
+    # ================================
+
     elif current_page == "Analysis":
 
-        paper_names = [
-            paper["title"]
-            for paper in all_papers
-        ]
-
-        selected_paper_name = st.selectbox(
-            "Select a paper",
-            paper_names
-        )
-
-        selected_paper = next(
-            paper
-            for paper in all_papers
-            if paper["title"] == selected_paper_name
-        )
+        selected_paper = select_paper(all_papers)
 
         container = show_expert_page("📄 Research Analysis Agent")
 
@@ -296,23 +304,13 @@ if uploaded_files:
                 st.markdown(selected_paper["summary"])
 
 
+    # ================================
+    # PAGE: Q&A (direct access, bypasses Coordinator)
+    # ================================
+
     elif current_page == "QA":
 
-        paper_names = [
-            paper["title"]
-            for paper in all_papers
-        ]
-
-        selected_paper_name = st.selectbox(
-            "Select a paper",
-            paper_names
-        )
-
-        selected_paper = next(
-            paper
-            for paper in all_papers
-            if paper["title"] == selected_paper_name
-        )
+        selected_paper = select_paper(all_papers)
 
         container = show_expert_page("🔎 Research Q&A Agent")
 
@@ -335,6 +333,10 @@ if uploaded_files:
             with container:
                 st.markdown(answer)
 
+
+    # ================================
+    # PAGE: Comparison (direct access, bypasses Coordinator)
+    # ================================
 
     elif current_page == "Comparison":
 
@@ -363,6 +365,10 @@ if uploaded_files:
             st.info("Upload at least 2 papers.")
 
 
+    # ================================
+    # PAGE: Innovation (direct access, bypasses Coordinator)
+    # ================================
+
     elif current_page == "Innovation":
 
         container = show_expert_page("💡 Research Innovation Agent")
@@ -376,3 +382,5 @@ if uploaded_files:
 
             with container:
                 st.markdown(innovation)
+
+                

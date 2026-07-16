@@ -1,3 +1,11 @@
+# ==========================================================
+# EXPERT PAGE HEADER
+# Renders the colored banner + result container used by
+# EVERY individual agent page (Analysis/QA/Comparison/
+# Innovation). AGENT_STYLES maps each agent's title to its
+# accent color so each agent has a consistent visual identity.
+# ==========================================================
+
 import streamlit as st
 
 AGENT_STYLES = {

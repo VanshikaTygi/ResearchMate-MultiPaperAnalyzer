@@ -1,3 +1,12 @@
+# ==========================================================
+# RESEARCH INNOVATION AGENT
+# Surfaces research gaps and future directions. Behaves
+# differently depending on how many papers are uploaded:
+# single paper -> gaps/limitations/ideas for THAT paper.
+# multiple papers -> SHARED gaps + a hybrid research proposal
+# that combines ideas across papers.
+# ==========================================================
+
 from utils.llm import generate_answer
 
 
@@ -15,6 +24,11 @@ def generate_research_innovation(all_papers):
     -----------------------------------------
     """
 
+    # The prompt itself contains the single-vs-multiple
+    # branching logic (not Python if/else) — we let the LLM
+    # decide which of the two output formats to use based on
+    # how many paper summaries appear in combined_context.
+    
     question = f"""
     Analyze the following research paper summaries.
 

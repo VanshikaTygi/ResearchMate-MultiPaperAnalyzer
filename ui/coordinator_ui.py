@@ -1,3 +1,10 @@
+# ==========================================================
+# COORDINATOR CHAT UI
+# Renders the ChatGPT-style chat box used on the Coordinator
+# page. Returns (user_query, analyze_button) back to app.py,
+# which then calls route_query() on that text.
+# ==========================================================
+
 import streamlit as st
 
 def show_coordinator_page():

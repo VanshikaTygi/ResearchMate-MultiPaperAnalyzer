@@ -1,3 +1,10 @@
+# ==========================================================
+# HOME HEADER
+# Renders the gradient hero banner at the top of the app
+# (title, tagline, and tech-stack badges). Purely visual —
+# no logic here.
+# ==========================================================
+ 
 import streamlit as st
 
 def show_home_header():
