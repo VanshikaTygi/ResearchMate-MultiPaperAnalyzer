@@ -151,7 +151,8 @@ if uploaded_files:
     
         st.toast(f"{len(uploaded_files)} paper(s) uploaded successfully.")
 
-        st.session_state.papers = prepare_all_papers(uploaded_files)
+        with st.spinner("Reading and indexing your paper(s)... this can take a moment for larger PDFs."):
+            st.session_state.papers = prepare_all_papers(uploaded_files)
 
         st.session_state.uploaded_file_names = current_file_names
 
@@ -193,20 +194,19 @@ if uploaded_files:
 
             st.success("Coordinator Decision")
 
-            st.write("Selected Agent(s):")
-            st.write(", ".join(routing["agents"]))
+            st.write("Selected Agent(s): " + ", ".join(routing["agents"]))
 
-            st.write("Detected Intent:")
-            st.write(", ".join(routing["keys"]))
+            st.write("Detected Intent: " + ", ".join(routing["keys"]))
 
             for key in routing["keys"]:
 
                 if key == "analysis":
 
                     if selected_paper["summary"] is None:
-                        selected_paper["summary"] = analyze_research_paper(
-                            selected_paper["chunks"]
-                        )
+                        with st.spinner("Analyzing the paper..."):
+                            selected_paper["summary"] = analyze_research_paper(
+                                selected_paper["chunks"]
+                            )
 
                     container = show_expert_page("📄 Research Analysis Agent")
 
@@ -216,14 +216,15 @@ if uploaded_files:
 
                 elif key == "qa":
 
-                    answer = research_qa_agent(
-                        user_query,
-                        selected_paper["vector_store"],
-                        selected_paper["embedding_model"],
-                        selected_paper["chunks"],
-                        selected_paper["title"],
-                        selected_paper["filename"]
-                    )
+                    with st.spinner("Searching the paper for your answer..."):
+                        answer = research_qa_agent(
+                            user_query,
+                            selected_paper["vector_store"],
+                            selected_paper["embedding_model"],
+                            selected_paper["chunks"],
+                            selected_paper["title"],
+                            selected_paper["filename"]
+                        )
 
                     container = show_expert_page("🔎 Research Q&A Agent")
 
@@ -235,10 +236,11 @@ if uploaded_files:
 
                     if len(all_papers) >= 2:
 
-                        comparison = compare_research_papers(
-                            all_papers,
-                            user_query
-                        )
+                        with st.spinner("Comparing the uploaded papers..."):
+                            comparison = compare_research_papers(
+                                all_papers,
+                                user_query
+                            )
 
                         container = show_expert_page("📊 Comparative Intelligence Agent")
 
@@ -252,7 +254,8 @@ if uploaded_files:
 
                 elif key == "innovation":
 
-                    innovation = generate_research_innovation(all_papers)
+                    with st.spinner("Identifying research gaps and future directions..."):
+                        innovation = generate_research_innovation(all_papers)
 
                     container = show_expert_page("💡 Research Innovation Agent")
 
@@ -284,9 +287,10 @@ if uploaded_files:
 
             if selected_paper["summary"] is None:
 
-                selected_paper["summary"] = analyze_research_paper(
-                    selected_paper["chunks"]
-                )
+                with st.spinner("Analyzing the paper..."):
+                    selected_paper["summary"] = analyze_research_paper(
+                        selected_paper["chunks"]
+                    )
 
             with container:
                 st.markdown(selected_paper["summary"])
@@ -318,14 +322,15 @@ if uploaded_files:
 
         if question:
 
-            answer = research_qa_agent(
-                question,
-                selected_paper["vector_store"],
-                selected_paper["embedding_model"],
-                selected_paper["chunks"],
-                selected_paper["title"],
-                selected_paper["filename"]
-            )
+            with st.spinner("Searching the paper for your answer..."):
+                answer = research_qa_agent(
+                    question,
+                    selected_paper["vector_store"],
+                    selected_paper["embedding_model"],
+                    selected_paper["chunks"],
+                    selected_paper["title"],
+                    selected_paper["filename"]
+                )
 
             with container:
                 st.markdown(answer)
@@ -344,10 +349,11 @@ if uploaded_files:
 
             if st.button("Compare"):
 
-                comparison = compare_research_papers(
-                    all_papers,
-                    comparison_question if comparison_question else None
-                )
+                with st.spinner("Comparing the uploaded papers..."):
+                    comparison = compare_research_papers(
+                        all_papers,
+                        comparison_question if comparison_question else None
+                    )
 
                 with container:
                     st.markdown(comparison)
@@ -363,9 +369,10 @@ if uploaded_files:
 
         if st.button("Generate Innovation"):
 
-            innovation = generate_research_innovation(
-                all_papers
-            )
+            with st.spinner("Identifying research gaps and future directions..."):
+                innovation = generate_research_innovation(
+                    all_papers
+                )
 
             with container:
                 st.markdown(innovation)

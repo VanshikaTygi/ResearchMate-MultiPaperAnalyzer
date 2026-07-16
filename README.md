@@ -184,9 +184,12 @@ ResearchMate-MultiPaperAnalyzer/
 │   ├── comparison_agent.py
 │   ├── innovation_agent.py
 │
-├── services/
+├── utils/
 │   ├── pdf_processor.py
 │   ├── vector_store.py
+
+├── services/
+│   ├── paper_manager.py
 │
 ├── ui/
 │   ├── sidebar_ui.py
